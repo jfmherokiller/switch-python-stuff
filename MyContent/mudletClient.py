@@ -267,7 +267,7 @@ def GuiProcess(MudData, TelnetBack):
     else:
         if (MudData['Player_text_changed'] == True):
             TelnetBack.SendMessage()
-            MudData['Clear_Player_data'] = True
+
         TelnetBack.UpdateWorld()
         TelnetBack.PrintWorld()
 
@@ -283,7 +283,7 @@ def main():
     # My stuff
 
     MudData = {
-        'Player_text': 'towel.blinkenlights.nl,23',
+        'Player_text': 'flexiblesurvival.com,2000',
         'Player_text_changed': False,
         'Player_text_changed1': False,
         'World_text': 'Please Enter the server info like this: serverhost.port',

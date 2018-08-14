@@ -37,4 +37,7 @@ class TelnetBackend:
         self.MudDataInner['World_text'] = "\n".join(self.screen.display)
 
     def SendMessage(self):
-        self.telnetConnection.write(self.MudDataInner['Player_text'].encode("utf-8"))
+        playerText = self.MudDataInner['Player_text'] + "\n"
+        if(playerText != "\n"):
+            self.telnetConnection.write(playerText.encode('ascii'))
+        self.MudDataInner['Clear_Player_data'] = True
