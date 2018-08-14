@@ -231,7 +231,7 @@ def MudClientWindow(MudData):
     imgui.text("Input:")
     imgui.same_line()
     MudData['Player_text_changed'], MudData['Player_text'] = imgui.input_text(
-        '',
+        '\n\n',
         MudData['Player_text'],
         1920,
         imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
@@ -242,7 +242,9 @@ def MudClientWindow(MudData):
 
 
 def Empty_PlayerInfo(MudData):
+    texty_text = MudData['Player_text']
     MudData['Player_text'] = ''
+    return texty_text
 
 
 def GuiProcess(MudData, TelnetBack):
@@ -257,10 +259,16 @@ def GuiProcess(MudData, TelnetBack):
             MudData['server_port'] = server_data[1]
             if (TelnetBack.OpenIt() == True):
                 MudData['Entered_server_data'] = True
-                Empty_PlayerInfo(MudData)
+                MudData['Clear_Player_data'] = True
     else:
         TelnetBack.UpdateWorld()
         TelnetBack.PrintWorld()
+
+
+def PostGuiStuff(MudData):
+    if (MudData['Clear_Player_data'] == True):
+        Empty_PlayerInfo(MudData)
+        MudData['Clear_Player_data'] = False
 
 
 def main():
@@ -275,7 +283,8 @@ def main():
         'World_text_changed': False,
         'server_host': '',
         'server_port': 0,
-        'Entered_server_data': False
+        'Entered_server_data': False,
+        'Clear_Player_data': False
     }
     keyboardInner = Keyboard2(MudData)
     TelnetSetup = TelnetBackend(MudData)
@@ -290,6 +299,7 @@ def main():
         imgui.set_next_window_position(0, 0)
         imgui.begin("",
                     flags=imgui.WINDOW_NO_TITLE_BAR | imgui.WINDOW_NO_RESIZE | imgui.WINDOW_NO_MOVE | imgui.WINDOW_NO_SAVED_SETTINGS)
+
         MudClientWindow(MudData)
         GuiProcess(MudData, TelnetSetup)
         if imgui.begin_popup("select-popup"):
@@ -298,7 +308,9 @@ def main():
         imgui.end()
 
         imgui.render()
+
         renderer.render()
+        PostGuiStuff(MudData)
 
     renderer.shutdown()
 
