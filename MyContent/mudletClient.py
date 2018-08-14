@@ -261,6 +261,9 @@ def GuiProcess(MudData, TelnetBack):
                 MudData['Entered_server_data'] = True
                 MudData['Clear_Player_data'] = True
     else:
+        if(MudData['Player_text_changed'] == True):
+            TelnetBack.SendMessage()
+            MudData['Clear_Player_data'] = True
         TelnetBack.UpdateWorld()
         TelnetBack.PrintWorld()
 

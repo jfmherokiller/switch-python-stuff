@@ -1,13 +1,10 @@
 import sys
 
-
 if not ('packages.zip' in sys.path):
     sys.path.insert(0, 'packages.zip')
 
     import pyte
     import telnetlib
-
-
 
 
 class TelnetBackend:
@@ -23,7 +20,8 @@ class TelnetBackend:
             self.telnetConnection.open(self.MudDataInner['server_host'], self.MudDataInner['server_port'])
             return True
         except:
-            self.MudDataInner['World_text'] = "Error Connection Failed Pleease Try Again\nPlease Enter the server info like this: serverhost,port\n"
+            self.MudDataInner[
+                'World_text'] = "Error Connection Failed Pleease Try Again\nPlease Enter the server info like this: serverhost,port\n"
 
     def UpdateWorld(self):
         try:
@@ -34,5 +32,9 @@ class TelnetBackend:
             self.MudDataInner[
                 'World_text'] = "Error Connection Closed Pleease Reconnect\nPlease Enter the server info like this: serverhost,port\n"
             self.MudDataInner['Entered_server_data'] = False
+
     def PrintWorld(self):
         self.MudDataInner['World_text'] = "\n".join(self.screen.display)
+
+    def SendMessage(self):
+        self.telnetConnection.write(self.MudDataInner['Player_text'].encode("utf-8"))
