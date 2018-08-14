@@ -283,7 +283,7 @@ def main():
     # My stuff
 
     MudData = {
-        'Player_text': 'flexiblesurvival.com,2000',
+        'Player_text': '',
         'Player_text_changed': False,
         'Player_text_changed1': False,
         'World_text': 'Please Enter the server info like this: serverhost.port',
