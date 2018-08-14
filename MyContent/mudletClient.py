@@ -217,6 +217,8 @@ class Keyboard2:
             self.InnerMudData['Player_text_changed1'] = True
         if (keyboardKeyName.lower()) == "backspace":
             self.InnerMudData['Player_text'] = self.InnerMudData['Player_text'][:-1]
+        if(keyboardKeyName.lower()) == "space":
+            self.InnerMudData['Player_text'] += ' '
 
 
 def MudClientWindow(MudData):
