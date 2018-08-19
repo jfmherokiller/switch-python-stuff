@@ -14,7 +14,7 @@ import imgui
 from imgui.integrations.sdl2 import SDL2Renderer
 import string
 
-print(string.ascii_letters + string.punctuation)
+
 keys = [
     [
         # =========================================
@@ -39,9 +39,10 @@ keys = [
             [
                 ('`', ',', '.', '/', '-', '=', '\\', '[', ']', 'backspace'),
                 ('~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '|'),
+                ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0'),
                 ('tab', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', ";", '\''),
                 ('capslock', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', "\"", "enter"),
-                ("shift", 'z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', "shift"),
+                ("lshift", 'z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', "rshift"),
                 ("ctrl", "win", 'alt', 'space  ', 'alt', 'win', '[=]', 'ctrl')
             ]
         ]
@@ -90,23 +91,8 @@ keys = [
         ],
 
     ],
-    [
-
-        [
-            ("Numeric_Keys"),
-            ({'side': 'top', 'expand': 'yes', 'fill': 'both'}),
-            [
-                ("numlock", "/", "*"),
-                ("7", "8", "9", "+"),
-                ("4", "5", "6", "-"),
-                ("1", "2", "3", "0"),
-                (".", "enter")
-            ]
-        ],
-
-    ]
-
 ]
+
 
 
 def colorToFloat(t):
@@ -120,8 +106,8 @@ FILE_COLOR = colorToFloat((41, 128, 185))
 
 
 class Keyboard2:
-    def __init__(self):
-        pass
+    def __init__(self, MudData):
+        self.InnerMudData = MudData
 
     # Function For Extracting Data From KeyBoard Table
     # and then provide us a well looking
@@ -145,6 +131,8 @@ class Keyboard2:
                         k = k.capitalize()
                         if len(k) <= 3:
                             imgui.push_style_color(imgui.COLOR_BUTTON, *FILE_COLOR)
+                            if not self.InnerMudData['Shift_enabled']:
+                                k = k.lower()
                             if imgui.button(k):
                                 self.button_command(k)
                             imgui.pop_style_color(1)
@@ -165,8 +153,19 @@ class Keyboard2:
 
     # Function For Detecting Pressed Keyword.
     def button_command(self, keyboardKeyName):
+        if self.InnerMudData['Shift_enabled']:
+            self.InnerMudData['Shift_enabled'] = False
+        if len(keyboardKeyName) == 1:
+            self.InnerMudData['Player_text'] += keyboardKeyName
+        if keyboardKeyName.lower() == "enter":
+            self.InnerMudData['Player_text_changed1'] = True
+        if (keyboardKeyName.lower()) == "backspace":
+            self.InnerMudData['Player_text'] = self.InnerMudData['Player_text'][:-1]
+        if (keyboardKeyName.lower()) == "space  ":
+            self.InnerMudData['Player_text'] += ' '
+        if (keyboardKeyName.lower() == "lshift") or (keyboardKeyName.lower() == "rshift"):
+            self.InnerMudData['Shift_enabled'] = True
 
-        return
 
 
 def MudClientWindow(MudData):
@@ -174,7 +173,7 @@ def MudClientWindow(MudData):
     MudData['World_text_changed'], MudData['World_text'] = imgui.input_text_multiline(
         '\n',
         MudData['World_text'],
-        5000,
+        50000,
         1280,
         660,
         imgui.INPUT_TEXT_READ_ONLY
@@ -183,7 +182,7 @@ def MudClientWindow(MudData):
     imgui.text("Input:")
     imgui.same_line()
     MudData['Player_text_changed'], MudData['Player_text'] = imgui.input_text(
-        '',
+        '\n\n',
         MudData['Player_text'],
         1920,
         imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
@@ -193,7 +192,21 @@ def MudClientWindow(MudData):
         imgui.open_popup("select-popup")
 
 
+def Empty_PlayerInfo(MudData):
+    texty_text = MudData['Player_text']
+    MudData['Player_text'] = ''
+    return texty_text
+
+def PostGuiStuff(MudData):
+    if (MudData['Clear_Player_data'] == True):
+        Empty_PlayerInfo(MudData)
+        MudData['Clear_Player_data'] = False
+
 def GuiProcess(MudData, TelnetBack):
+    if (MudData['Player_text_changed1'] == True):
+        MudData['Player_text_changed'] = True
+        MudData['Player_text_changed1'] = False
+
     if (MudData['Entered_server_data'] != True):
         if (MudData['Player_text_changed'] == True):
             server_data = [x.strip() for x in MudData['Player_text'].split(',')]
@@ -201,7 +214,11 @@ def GuiProcess(MudData, TelnetBack):
             MudData['server_port'] = server_data[1]
             if (TelnetBack.OpenIt() == True):
                 MudData['Entered_server_data'] = True
+                MudData['Clear_Player_data'] = True
     else:
+        if (MudData['Player_text_changed'] == True):
+            TelnetBack.SendMessage()
+
         TelnetBack.UpdateWorld()
         TelnetBack.PrintWorld()
 
@@ -209,16 +226,20 @@ def main():
     window, gl_context = impl_pysdl2_init()
     renderer = SDL2Renderer(window)
     # My stuff
-    keyboardInner = Keyboard2()
+
     MudData = {
-        'Player_text': 'towel.blinkenlights.nl,23',
+        'Player_text': '',
         'Player_text_changed': False,
+        'Player_text_changed1': False,
         'World_text': 'Please Enter the server info like this: serverhost.port',
         'World_text_changed': False,
         'server_host': '',
         'server_port': 0,
-        'Entered_server_data': False
+        'Entered_server_data': False,
+        'Clear_Player_data': False,
+        'Shift_enabled': False
     }
+    keyboardInner = Keyboard2(MudData)
     TelnetSetup = TelnetBackend(MudData)
     # End Of my stuff
     running = True
@@ -263,7 +284,7 @@ def main():
         imgui.render()
 
         SDL_GL_SwapWindow(window)
-
+        PostGuiStuff(MudData)
     renderer.shutdown()
     SDL_GL_DeleteContext(gl_context)
     SDL_DestroyWindow(window)
