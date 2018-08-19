@@ -217,7 +217,7 @@ def MudClientWindow(MudData):
     MudData['World_text_changed'], MudData['World_text'] = imgui.input_text_multiline(
         '\n',
         MudData['World_text'],
-        5000,
+        50000,
         1280,
         660,
         imgui.INPUT_TEXT_READ_ONLY
