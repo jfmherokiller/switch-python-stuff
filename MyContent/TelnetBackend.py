@@ -1,4 +1,5 @@
 import sys
+import struct
 
 if not ('packages.zip' in sys.path):
     sys.path.insert(0, 'packages.zip')
@@ -9,10 +10,12 @@ if not ('packages.zip' in sys.path):
 
 class TelnetBackend:
     def __init__(self, MudData):
-        self.screen = pyte.Screen(80, 24)
+        self.screensize = (150, 80)
+        self.screen = pyte.Screen(self.screensize[0], self.screensize[1])
         self.stream = pyte.ByteStream(self.screen)
         self.telnetConnection = telnetlib.Telnet()
         self.MudDataInner = MudData
+        self.telnetConnection.set_option_negotiation_callback(self.handle_option_negotiations)
 
     def OpenIt(self):
         try:
@@ -38,6 +41,22 @@ class TelnetBackend:
 
     def SendMessage(self):
         playerText = self.MudDataInner['Player_text'] + "\r\n"
-        if(playerText != "\n"):
+        if (playerText != "\n"):
             self.telnetConnection.write(playerText.encode('ascii'))
         self.MudDataInner['Clear_Player_data'] = True
+
+    def termtypeDefine(self, tsocket, command, option):
+        if command == telnetlib.DO:
+            tsocket.send(
+                telnetlib.IAC + telnetlib.SB + telnetlib.TTYPE + b'\0' + b"Switch Telnet Client\0" + telnetlib.IAC + telnetlib.SE)
+
+    def termNAWS(self, tsocket, command, option):
+        if command == telnetlib.DO:
+            tsocket.send(telnetlib.IAC + telnetlib.WILL + telnetlib.NAWS)
+            tsocket.send(telnetlib.IAC + telnetlib.SB + telnetlib.NAWS + b'\0' + bytes([self.screensize[0]]) + b'\0' + bytes([self.screensize[1]]) + telnetlib.IAC + telnetlib.SE)
+
+    def handle_option_negotiations(self, tsocket, command, option):
+        if option == telnetlib.TTYPE:
+            self.termtypeDefine(tsocket, command, option)
+        if option == telnetlib.NAWS:
+            self.termNAWS(tsocket, command, option)
