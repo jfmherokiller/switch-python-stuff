@@ -176,7 +176,7 @@ class Keyboard2:
                         k = k.capitalize()
                         if len(k) <= 3:
                             imgui.push_style_color(imgui.COLOR_BUTTON, *FILE_COLOR)
-                            if (self.InnerMudData['Shift_enabled'] == False):
+                            if not self.InnerMudData['Shift_enabled']:
                                 k = k.lower()
                             if imgui.button(k):
                                 self.button_command(k)
@@ -198,6 +198,8 @@ class Keyboard2:
 
     # Function For Detecting Pressed Keyword.
     def button_command(self, keyboardKeyName):
+        if self.InnerMudData['Shift_enabled']:
+            self.InnerMudData['Shift_enabled'] = False
         if len(keyboardKeyName) == 1:
             self.InnerMudData['Player_text'] += keyboardKeyName
         if keyboardKeyName.lower() == "enter":
