@@ -209,14 +209,7 @@ class Keyboard2:
         if (keyboardKeyName.lower()) == "space  ":
             self.InnerMudData['Player_text'] += ' '
         if (keyboardKeyName.lower() == "lshift") or (keyboardKeyName.lower() == "rshift"):
-            ToggleShift(self.InnerMudData)
-
-
-def ToggleShift(MudData):
-    if MudData['Shift_enabled'] == True:
-        MudData['Shift_enabled'] = False
-    if MudData['Shift_enabled'] == False:
-        MudData['Shift_enabled'] = True
+            self.InnerMudData['Shift_enabled'] = True
 
 
 def MudClientWindow(MudData):
