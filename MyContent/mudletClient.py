@@ -86,9 +86,10 @@ keys = [
             [
                 ('`', ',', '.', '/', '-', '=', '\\', '[', ']', 'backspace'),
                 ('~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+', '|'),
+                ('1', '2', '3', '4', '5', '6', '7', '8', '9', '0'),
                 ('tab', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '{', '}', ";", '\''),
                 ('capslock', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ':', "\"", "enter"),
-                ("shift", 'z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', "shift"),
+                ("lshift", 'z', 'x', 'c', 'v', 'b', 'n', 'm', '<', '>', '?', "rshift"),
                 ("ctrl", "win", 'alt', 'space  ', 'alt', 'win', '[=]', 'ctrl')
             ]
         ]
@@ -137,22 +138,6 @@ keys = [
         ],
 
     ],
-    [
-
-        [
-            ("Numeric_Keys"),
-            ({'side': 'top', 'expand': 'yes', 'fill': 'both'}),
-            [
-                ("numlock", "/", "*"),
-                ("7", "8", "9", "+"),
-                ("4", "5", "6", "-"),
-                ("1", "2", "3", "0"),
-                (".", "enter")
-            ]
-        ],
-
-    ]
-
 ]
 
 
@@ -191,6 +176,8 @@ class Keyboard2:
                         k = k.capitalize()
                         if len(k) <= 3:
                             imgui.push_style_color(imgui.COLOR_BUTTON, *FILE_COLOR)
+                            if (self.InnerMudData['Shift_enabled'] == False):
+                                k = k.lower()
                             if imgui.button(k):
                                 self.button_command(k)
                             imgui.pop_style_color(1)
@@ -217,8 +204,17 @@ class Keyboard2:
             self.InnerMudData['Player_text_changed1'] = True
         if (keyboardKeyName.lower()) == "backspace":
             self.InnerMudData['Player_text'] = self.InnerMudData['Player_text'][:-1]
-        if(keyboardKeyName.lower()) == "space  ":
+        if (keyboardKeyName.lower()) == "space  ":
             self.InnerMudData['Player_text'] += ' '
+        if (keyboardKeyName.lower() == "lshift") or (keyboardKeyName.lower() == "rshift"):
+            ToggleShift(self.InnerMudData)
+
+
+def ToggleShift(MudData):
+    if MudData['Shift_enabled'] == True:
+        MudData['Shift_enabled'] = False
+    if MudData['Shift_enabled'] == False:
+        MudData['Shift_enabled'] = True
 
 
 def MudClientWindow(MudData):
@@ -291,7 +287,8 @@ def main():
         'server_host': '',
         'server_port': 0,
         'Entered_server_data': False,
-        'Clear_Player_data': False
+        'Clear_Player_data': False,
+        'Shift_enabled': False
     }
     keyboardInner = Keyboard2(MudData)
     TelnetSetup = TelnetBackend(MudData)
